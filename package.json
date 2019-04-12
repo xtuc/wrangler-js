@@ -1,0 +1,26 @@
+{
+  "name": "wrangler-js",
+  "version": "0.0.1",
+  "description": "Wrangle your Cloudflare workers - JavaScript edition.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xtuc/wrangler-js.git"
+  },
+  "author": "Sven Sauleau <sven@sauleau.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/xtuc/wrangler-js/issues"
+  },
+  "homepage": "https://github.com/xtuc/wrangler-js#readme",
+  "bin": {
+    "wrangler-js": "./index.js"
+  },
+  "dependencies": {
+    "request": "^2.88.0",
+    "webpack": "^4.29.6"
+  }
+}
