@@ -59,7 +59,7 @@ function updateWorker(assets) {
   const form = request.form();
   const wasmModuleAsset = Object.keys(assets).find(filterByExtension("wasm"));
   const jsAssets = Object.keys(assets).filter(filterByExtension("js"));
-  const hasWasmModule = wasmModuleAsset !== null;
+  const hasWasmModule = wasmModuleAsset !== undefined;
 
   const script =
     createPrologue(wasmModuleAsset) +
