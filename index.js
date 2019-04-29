@@ -1,18 +1,19 @@
 #!/usr/bin/env node
 
 const webpack = require("webpack");
-const { Readable } = require("stream");
-const { put } = require("request");
-const { createReadStream } = require("fs");
+const { writeFileSync } = require("fs");
 const { join } = require("path");
 const config = require(join(process.cwd(), "./webpack.config.js"));
 
 const compiler = webpack(config);
-const { CF_ACCOUNT_ID, CF_ACCOUNT_EMAIL, CF_API_KEY } = process.env;
 const WASM_BINDING = "wasmprogram";
 
 function filterByExtension(ext) {
   return v => v.indexOf("." + ext) !== -1;
+}
+
+function toOutput(name) {
+  return `./worker/${name}`;
 }
 
 function createPrologue(wasmFilename) {
@@ -32,31 +33,7 @@ function createPrologue(wasmFilename) {
   `;
 }
 
-function updateWorker(assets) {
-  const options = {
-    url: `https://api.cloudflare.com/client/v4/zones/${CF_ACCOUNT_ID}/workers/script`,
-    headers: {
-      "X-Auth-Email": CF_ACCOUNT_EMAIL,
-      "X-Auth-Key": CF_API_KEY,
-      "Content-Type": "multipart/form-data"
-    }
-  };
-
-  const request = put(options, (err, httpResponse, body) => {
-    if (err) {
-      throw err;
-    }
-
-    const res = JSON.parse(body);
-
-    if (res.success === true) {
-      console.log("Deployed!");
-    } else {
-      console.log(res.errors, res.messages);
-    }
-  });
-
-  const form = request.form();
+function emitForWrangler(assets) {
   const wasmModuleAsset = Object.keys(assets).find(filterByExtension("wasm"));
   const jsAssets = Object.keys(assets).filter(filterByExtension("js"));
   const hasWasmModule = wasmModuleAsset !== undefined;
@@ -68,14 +45,14 @@ function updateWorker(assets) {
       return acc + asset.source();
     }, "");
 
-  form.append("metadata", createMetadata(hasWasmModule), {
-    contentType: "application/json"
-  });
-  form.append("script", script, { contentType: "application/javascript" });
+  writeFileSync(toOutput("script.js"), script);
+  writeFileSync(toOutput("metadata.json"), createMetadata(hasWasmModule));
+
   if (hasWasmModule === true) {
-    form.append(WASM_BINDING, Buffer.from(assets[wasmModuleAsset].source()), {
-      contentType: "application/wasm"
-    });
+    writeFileSync(
+      toOutput("module.wasm"),
+      Buffer.from(assets[wasmModuleAsset].source())
+    );
   }
 }
 
@@ -99,6 +76,6 @@ compiler.run((err, stats) => {
   if (err) {
     throw err;
   }
-  updateWorker(stats.compilation.assets);
+  emitForWrangler(stats.compilation.assets);
   console.log(stats.toString({ colors: true }));
 });
