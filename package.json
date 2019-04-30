@@ -1,6 +1,6 @@
 {
   "name": "wrangler-js",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Wrangle your Cloudflare workers - JavaScript edition.",
   "main": "index.js",
   "scripts": {
