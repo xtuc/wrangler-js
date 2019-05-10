@@ -4,6 +4,10 @@ const webpack = require("webpack");
 const { join } = require("path");
 const config = require(join(process.cwd(), "./webpack.config.js"));
 
+let compilerOutput = "";
+const oldConsoleLog = console.log;
+console.log = msg => compilerOutput += msg;
+
 const compiler = webpack(config);
 
 function filterByExtension(ext) {
@@ -15,6 +19,7 @@ function emitForWrangler(assets) {
     wasm: null,
     wasm_name: "",
     script: null,
+    compiler_output: compilerOutput,
   };
 
   const wasmModuleAsset = Object.keys(assets).find(filterByExtension("wasm"));
@@ -39,6 +44,8 @@ compiler.run((err, stats) => {
   if (err) {
     throw err;
   }
+
+  console.log =  oldConsoleLog;
   emitForWrangler(stats.compilation.assets);
   // console.log(stats.toString({ colors: true }));
 });
